@@ -3,10 +3,18 @@ import styled from "styled-components";
 import ChatIcon from "@mui/icons-material/Chat";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SearchIcon from "@mui/icons-material/Search";
+import LogoutIcon from "@mui/icons-material/Logout";
 import Avatar from "@mui/material/Avatar";
 import { Button, IconButton } from "@mui/material";
+import { signOut, auth } from "../firebase";
 
 function Sidebar() {
+  const signUserOut = () => {
+    signOut(auth)
+      .then(() => console.log("User signed out successfully"))
+      .catch((error) => console.log(error));
+  };
+
   return (
     <Container>
       <Header>
@@ -17,6 +25,9 @@ function Sidebar() {
           </IconButton>
           <IconButton>
             <MoreVertIcon />
+          </IconButton>
+          <IconButton onClick={signUserOut}>
+            <LogoutIcon />
           </IconButton>
         </IconsContainer>
       </Header>
