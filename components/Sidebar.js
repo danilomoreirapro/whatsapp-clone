@@ -6,12 +6,21 @@ import SearchIcon from "@mui/icons-material/Search";
 import LogoutIcon from "@mui/icons-material/Logout";
 import Avatar from "@mui/material/Avatar";
 import { Button, IconButton } from "@mui/material";
-import { signOut, auth } from "../firebase";
-
+import db, { signOut, auth } from "../firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import Chat from "./Chat";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import AddNewChat from "./AddNewChat";
 
 function Sidebar() {
-  const [open, setOpen] = useState(true);
+  const [user] = useAuthState(auth);
+  const [open, setOpen] = useState(false);
+  const [chatsSnapshot, setChatsSnapshot] = useState([]);
+  const chatsRef = collection(db, "chats");
+  const userChatsQuery = query(
+    chatsRef,
+    where("users", "array-contains", user.email)
+  );
 
   const signUserOut = () => {
     signOut(auth)
@@ -19,10 +28,18 @@ function Sidebar() {
       .catch((error) => console.log(error));
   };
 
+  const updateChats = async () => {
+    setChatsSnapshot(await getDocs(userChatsQuery));
+  };
+
+  useEffect(() => {
+    updateChats();
+  }, [open]);
+
   return (
     <Container>
       <Header>
-        <UserAvatar />
+        <UserAvatar src={user.photoURL} />
         <IconsContainer>
           <IconButton>
             <ChatIcon />
@@ -43,6 +60,9 @@ function Sidebar() {
         NOVO CHAT
       </SidebarButton>
       <AddNewChat open={open} handleClose={() => setOpen(false)} />
+      {chatsSnapshot?.docs?.map((chat) => {
+        return <Chat key={chat.id} id={chat.id} users={chat.data().users} />;
+      })}
     </Container>
   );
 }

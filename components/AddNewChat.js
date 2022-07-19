@@ -17,13 +17,11 @@ function AddNewChat({ open, handleClose }) {
   const getChatId = (emailA, emailB) => {
     const a = window.btoa(emailA);
     const b = window.btoa(emailB);
-    const halfA = a.slice(a.length / 2, a.length);
-    const halfB = b.slice(b.length / 2, b.length);
 
     if (emailA < emailB) {
-      return halfA + halfB;
+      return a + b;
     }
-    return halfB + halfA;
+    return b + a;
   };
 
   const createChat = (input) => {
@@ -58,7 +56,12 @@ function AddNewChat({ open, handleClose }) {
       >
         <Header>
           <HeaderTitle>Conversar com...</HeaderTitle>
-          <CloseModal onClick={handleClose}>
+          <CloseModal
+            onClick={() => {
+              setError(null);
+              handleClose();
+            }}
+          >
             <CloseIcon />
           </CloseModal>
         </Header>
@@ -74,7 +77,14 @@ function AddNewChat({ open, handleClose }) {
             <ErrorMsg>{error}</ErrorMsg>
           </Body>
           <Footer>
-            <Button onClick={handleClose} size="small" color="success">
+            <Button
+              onClick={() => {
+                setError(null);
+                handleClose();
+              }}
+              size="small"
+              color="success"
+            >
               Cancelar
             </Button>
             <Button
