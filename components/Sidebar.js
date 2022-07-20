@@ -11,30 +11,25 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import Chat from "./Chat";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import AddNewChat from "./AddNewChat";
+import { useCollection } from "react-firebase-hooks/firestore";
 
 function Sidebar() {
   const [user] = useAuthState(auth);
   const [open, setOpen] = useState(false);
-  const [chatsSnapshot, setChatsSnapshot] = useState([]);
   const chatsRef = collection(db, "chats");
   const userChatsQuery = query(
     chatsRef,
     where("users", "array-contains", user.email)
   );
+  const [chatsSnapshot] = useCollection(userChatsQuery, {
+    snapshotListenOptions: { includeMetadataChanges: true },
+  });
 
   const signUserOut = () => {
     signOut(auth)
       .then(() => console.log("User signed out successfully"))
       .catch((error) => console.log(error));
   };
-
-  const updateChats = async () => {
-    setChatsSnapshot(await getDocs(userChatsQuery));
-  };
-
-  useEffect(() => {
-    updateChats();
-  }, [open]);
 
   return (
     <Container>
@@ -92,7 +87,20 @@ const SearchInput = styled.input`
   flex: 1;
 `;
 
-const Container = styled.div``;
+const Container = styled.div`
+  flex: 0.45;
+  border-right: 1px solid whitesmoke;
+  min-width: 300px;
+  max-width: 350px;
+  height: 100vh;
+  overflow: scroll;
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+`;
 
 const Header = styled.div`
   display: flex;

@@ -1,15 +1,35 @@
 import getRecipientEmail from "../utils/getRecipientEmail";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../firebase";
+import db, { auth } from "../firebase";
 import styled from "styled-components";
 import { Avatar } from "@mui/material";
+import { collection, query, where } from "firebase/firestore";
+import { useCollection } from "react-firebase-hooks/firestore";
+import { useRouter } from "next/router";
 
 function Chat({ id, users }) {
   const [user] = useAuthState(auth);
   const recipientEmail = getRecipientEmail(users, user.email);
+  const usersRef = collection(db, "users");
+  const recipientQuery = query(usersRef, where("email", "==", recipientEmail));
+  const [recipientSnapshot] = useCollection(recipientQuery, {
+    snapshotListenOptions: { includeMetadataChanges: true },
+  });
+
+  const recipient = recipientSnapshot?.docs?.[0]?.data();
+  const router = useRouter();
+
+  const enterChat = () => {
+    router.push(`/chat/${id}`);
+  };
+
   return (
-    <Container>
-      <UserAvatar />
+    <Container onClick={enterChat}>
+      {recipient ? (
+        <UserAvatar src={recipient.photoURL} />
+      ) : (
+        <UserAvatar>{recipientEmail[0].toUpperCase()}</UserAvatar>
+      )}
       <RecipientEmail>{recipientEmail}</RecipientEmail>
     </Container>
   );
